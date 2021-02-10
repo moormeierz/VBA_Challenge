@@ -1,0 +1,158 @@
+Sub Stock()
+
+'Declare Variables
+
+
+Dim ticker As String
+Dim volumeticker As String
+Dim great_ticker As String
+Dim least_ticker As String
+
+Dim stockopen As Double
+Dim stockclose As Double
+Dim daychange As Double
+Dim yearchange As Double
+Dim perchange As Double
+Dim percentcompare As Double
+Dim percentcompare2 As Double
+Dim great_percent As Double
+Dim least_percent As Double
+Dim volumecompare As Double
+Dim great_volume As Double
+
+Dim stockvolume As Single
+
+Dim stockrecords As Long
+Dim i As Long
+Dim j As Long
+Dim lastrow As Long
+
+Dim column As Integer
+Dim summarytable As Integer
+'--------------------------------------------
+
+'Label Summary Tables
+
+Range("J1").Value = "Ticker"
+Range("K1").Value = "Yearly Change"
+Range("L1").Value = "Percent Change"
+Range("M1").Value = "Total Stock Volume"
+
+Range("Q1").Value = "Ticker"
+Range("R1").Value = "Value"
+Range("P2").Value = "Greatest % Increase"
+Range("P3").Value = "Greatest % Decrease"
+Range("P4").Value = "Greatest Total Volume"
+
+'------------------------------------------------
+
+'Set initial values
+column = 1
+summarytable = 2
+stockopen = 0
+stockclose = 0
+yearchange = 0
+perchange = 0
+stockvolume = 0
+percentcompare = 0
+percentcompare2 = 0
+great_percent = 0
+least_percent = 0
+volumeholder = 0
+great_volume = 0
+'-------------------------------------------
+For Each ws In Worksheets
+lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+ For i = 2 To lastrow
+ 
+ 'Add up values for each column is summary table
+    stockopen = ws.Cells(i, 3).Value
+    stockclose = ws.Cells(i, 6).Value
+    stockvolume = stockvolume + ws.Cells(i, 7).Value
+    
+    daychange = (stockclose - stockopen)
+    yearchange = yearchange + daychange
+
+
+'When value changes, write the summary in summary table, else keep adding up
+ If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+      
+      ticker = (ws.Cells(i, 1).Value)
+      
+      ' Print the Ticker in the Summary Table
+      Range("J" & summarytable).Value = ticker
+      
+      Range("K" & summarytable).Value = yearchange
+      
+      stockrecords = (i - 1)
+      perchange = (yearchange / stockrecords)
+
+        ' Print the Yearly Change to the Summary Table
+      Range("L" & summarytable).Value = FormatPercent(perchange, 2)
+      
+      If perchange > 0 Then
+        Range("L" & summarytable).Interior.ColorIndex = 4
+      End If
+      
+      If perchange < 0 Then
+        Range("L" & summarytable).Interior.ColorIndex = 3
+      End If
+         
+     
+         'Print Total Volume
+      Range("M" & summarytable).Value = stockvolume
+
+      ' Add one to the summary table row
+    summarytable = summarytable + 1
+      
+      
+        'Compare percentage Determine largest increase
+        If perchange > percentcompare Then
+            percentcompare = perchange
+        
+            great_percent = percentcompare
+            great_ticker = ticker
+        End If
+        
+        'Compare percentage Determine small increase
+         If perchange < percentcompare2 Then
+            percentcompare2 = perchange
+        
+            least_percent = percentcompare2
+            least_ticker = ticker
+        End If
+         
+        'Compare Volume Determine largest
+        If stockvolume > volumecompare Then
+            volumecompare = stockvolume
+        
+            great_volume = volumecompare
+            volumeticker = ticker
+        End If
+   
+      
+        'Write second summary table
+        Range("Q2").Value = great_ticker
+        Range("R2").Value = FormatPercent(great_percent, 2)
+        Range("Q3").Value = least_ticker
+        Range("R3").Value = FormatPercent(least_percent, 2)
+        Range("Q4").Value = volumeticker
+        Range("R4").Value = great_volume
+      
+       ' Reset Ticker Totals
+        stockopen = 0
+        stockclose = 0
+        yearchange = 0
+        percentchange = 0
+        stockvolume = 0
+        daychange = 0
+        stockrecords = 0
+
+  End If
+
+Next i
+
+Next ws
+
+End Sub
