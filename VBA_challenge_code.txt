@@ -1,0 +1,161 @@
+Sub Stock()
+
+
+For Each ws In Worksheets
+
+'----------------------------------------------
+'Label both summary tables
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Yearly Change"
+ws.Range("K1").Value = "Percent Change"
+ws.Range("L1").Value = "Total Stock Volume"
+
+ws.Range("O1").Value = "Ticker"
+ws.Range("P1").Value = "Value"
+ws.Range("N2").Value = "Greatest % Increase"
+ws.Range("N3").Value = "Greatest % Decrease"
+ws.Range("N4").Value = "Greatest Total Volume"
+
+'------------------------------------------------
+'Declare Variables
+Dim ticker As String
+Dim increase_ticker As String
+Dim decrease_ticker As String
+Dim totalticker As String
+
+Dim yearchange As Double
+Dim percentchange As Double
+Dim great_percent As Double
+Dim least_percent As Double
+Dim totalvolume As Double
+
+Dim openprice As Double
+Dim closeprice As Double
+Dim daychange As Double
+Dim percentcompare_inc As Double
+Dim percentcompare_dec As Double
+Dim volumecompare As Double
+
+Dim stockvolume As Single
+Dim column As Integer
+Dim summarytable As Integer
+
+Dim stockrecords As Long
+Dim lastrow As Long
+Dim i As Long
+
+'------------------------------------------------
+'Set initial values
+
+openprice = 0
+closeprice = 0
+yearchange = 0
+percentchange = 0
+stockvolume = 0
+percentcompare_inc = 0
+great_percent = 0
+percentcompare_dec = 0
+least_percent = 0
+volumecompare = 0
+totalvolume = 0
+column = 1
+summarytable = 2
+
+'Lastrow loop
+lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+For i = 2 To lastrow
+
+'-----------------------------------------------------
+ 'Define Variables
+    openprice = ws.Cells(i, 3).Value
+    closeprice = ws.Cells(i, 6).Value
+    
+    stockvolume = stockvolume + ws.Cells(i, 7).Value
+    daychange = (closeprice - openprice)
+    yearchange = yearchange + daychange
+    
+'------------------------------------------------------
+
+  'If the ticker changes, then record in summary table
+ If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+
+     'Record Ticker
+      ticker = (ws.Cells(i, 1).Value)
+      
+      ws.Range("I" & summarytable).Value = ticker
+      
+      'Record Yearly Change
+      ws.Range("J" & summarytable).Value = yearchange
+      
+    If yearchange > 0 Then
+        ws.Range("J" & summarytable).Interior.ColorIndex = 4
+      End If
+      
+    If yearchange < 0 Then
+        ws.Range("J" & summarytable).Interior.ColorIndex = 3
+      End If
+
+      'Record Percentage Change
+       stockrecords = (i - 1)
+       percentchange = (yearchange / stockrecords)
+       
+       ws.Range("K" & summarytable).Value = FormatPercent(percentchange, 2)
+      
+      'Record Total Stock Volume
+      ws.Range("L" & summarytable).Value = stockvolume
+
+      'Add one to the summary table
+       summarytable = summarytable + 1
+      
+      
+        'Find Greatest Percentage Increase
+        If percentchange > percentcompare_inc Then
+            percentcompare_inc = percentchange
+        
+            great_percent = percentcompare_inc
+            increase_ticker = ticker
+        End If
+        
+        'Find Greatest Percentage Decrease
+         If percentchange < percentcompare_dec Then
+            percentcompare_dec = percentchange
+        
+            least_percent = percentcompare_dec
+            decrease_ticker = ticker
+        End If
+         
+        'Find Greatest Total Volume
+        If stockvolume > volumecompare Then
+            volumecompare = stockvolume
+        
+            totalvolume = volumecompare
+            totalticker = ticker
+        End If
+   
+      
+        'Record values in second summary table
+        ws.Range("O4").Value = totalticker
+        ws.Range("O2").Value = increase_ticker
+        ws.Range("O3").Value = decrease_ticker
+        ws.Range("P4").Value = totalvolume
+        ws.Range("P2").Value = FormatPercent(great_percent, 2)
+        ws.Range("P3").Value = FormatPercent(least_percent, 2)
+      
+      
+       'Reset Totals
+        openprice = 0
+        closeprice = 0
+        yearchange = 0
+        daychange = 0
+        percentchange = 0
+        stockvolume = 0
+  
+        stockrecords = 0
+
+  End If
+
+Next i
+
+Next ws
+
+End Sub
